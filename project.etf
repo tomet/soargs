@@ -1,0 +1,5 @@
+mode = "go"
+run = "go build . && ./soargs"
+compile = "go build ."
+test = "go test ."
+sourcefiles = "**/*.go"
