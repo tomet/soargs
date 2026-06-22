@@ -1,0 +1,6 @@
+github.com/tomet/cmdr v0.2.4 h1:SKJsQ0vaTAmdgEjLqPft+CqVIGGdVezFUlvGOvS9xok=
+github.com/tomet/cmdr v0.2.4/go.mod h1:eCcd+7Gq/pB/cepSp+wbWz8867MQOiA8vcBSrvO24PI=
+github.com/tomet/soargs v0.0.0-20260621122004-e9bbf2247c6c h1:B17xrcDk4unWaSzI+1tD90zOTCU+PtuJ1YUCgv0F+TQ=
+github.com/tomet/soargs v0.0.0-20260621122004-e9bbf2247c6c/go.mod h1:CkazUBjUUVZ83nKr/HycYac3f2dgk4Vnvfaehs6kv60=
+github.com/tomet/terror v0.1.4 h1:n2++eMpMOjZMDOOV4RkqIHbzwUBKgsmWSMYCBOTMgRc=
+github.com/tomet/terror v0.1.4/go.mod h1:2ibj9w5XIrUIiatFk14ZpoDIa7zGau28GHr+RlJVW7k=
