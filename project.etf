@@ -1,5 +1,5 @@
 mode = "go"
-run = "go build . && cd soargs-server && go build . && ./soargs-server start soargs-server"
-compile = "go build ."
+run = "./build_and_run.fish"
+compile = "build.fish"
 test = "go test ."
 sourcefiles = "**/*.go"

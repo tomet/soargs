@@ -1,0 +1,4 @@
+github.com/tomet/ansi v0.2.1 h1:u63hbx53LDrv+Jg9csy38p2UeRWUvl/BO/xurMbdGKs=
+github.com/tomet/ansi v0.2.1/go.mod h1:01HwSXwo2c78soeJ0b/WXu4DWqxRwqE0n/EzEqGvgAc=
+github.com/tomet/terror v0.1.7 h1:kgoBDwIGjm/uLds0OPY67zlj7cu9Wkl9l5pnB6CWwtA=
+github.com/tomet/terror v0.1.7/go.mod h1:2ibj9w5XIrUIiatFk14ZpoDIa7zGau28GHr+RlJVW7k=

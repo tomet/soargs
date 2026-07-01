@@ -1,2 +1,12 @@
+github.com/tomet/ansi v0.2.1 h1:u63hbx53LDrv+Jg9csy38p2UeRWUvl/BO/xurMbdGKs=
+github.com/tomet/ansi v0.2.1/go.mod h1:01HwSXwo2c78soeJ0b/WXu4DWqxRwqE0n/EzEqGvgAc=
+github.com/tomet/prt v0.0.2 h1:6pPhaLEsKM5PWk/3Ta90wx7e7Ro1BoIaH7/Bs1bW16E=
+github.com/tomet/prt v0.0.2/go.mod h1:jyEqX9JdQM5oMZTc5B1NdYm/JA7/+DBwZFM37Vvb2tk=
 github.com/tomet/soargs v0.0.0-20260621122004-e9bbf2247c6c h1:B17xrcDk4unWaSzI+1tD90zOTCU+PtuJ1YUCgv0F+TQ=
 github.com/tomet/soargs v0.0.0-20260621122004-e9bbf2247c6c/go.mod h1:CkazUBjUUVZ83nKr/HycYac3f2dgk4Vnvfaehs6kv60=
+github.com/tomet/terror v0.1.4 h1:n2++eMpMOjZMDOOV4RkqIHbzwUBKgsmWSMYCBOTMgRc=
+github.com/tomet/terror v0.1.4/go.mod h1:2ibj9w5XIrUIiatFk14ZpoDIa7zGau28GHr+RlJVW7k=
+github.com/tomet/terror v0.1.6 h1:SUVCE1grpi2v+vT0CT5rVh7KyuWL2qrXEElSAcsa8MA=
+github.com/tomet/terror v0.1.6/go.mod h1:2ibj9w5XIrUIiatFk14ZpoDIa7zGau28GHr+RlJVW7k=
+github.com/tomet/terror v0.1.7 h1:kgoBDwIGjm/uLds0OPY67zlj7cu9Wkl9l5pnB6CWwtA=
+github.com/tomet/terror v0.1.7/go.mod h1:2ibj9w5XIrUIiatFk14ZpoDIa7zGau28GHr+RlJVW7k=
