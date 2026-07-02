@@ -5,18 +5,32 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-
-	"github.com/tomet/terror"
 )
 
 type Server struct {
-	program    string
+	name       string
 	socketPath string
 	cacheDir   string
 	listener   net.Listener
 }
 
-func StartServer(program string) (*Server, error) {
+// Startet einen Server mit dem Namen `name`.
+//
+// Der Name bestimmt den Pfad des Sockets: `~/.cache/soargs/NAME.socket`.
+//
+// Es wird versucht einen eventuell bereits vorhandenen Socket zu löschen, falls
+// an diesem nicht bereits ein Server lauscht.
+//
+// Danach wird ein neuer Socket angelegt.
+// 
+// Falls der Socket oder das Verzeichnis für den Socket auf Grund von fehlenden
+// Permissions nicht angegelegt werden kann, wird ein "denied"-Fehler geliefert.
+//
+// Falls der Socket bereits existiert und darauf bereits ein Server läuft,
+// wird ein "exists"-Fehler geliefert.
+//
+// Alle andere Fehler werden als "os"-Fehler zurückgegeben.
+func StartServer(name string) (*Server, error) {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
 		cacheDir = "/tmp"
@@ -26,13 +40,13 @@ func StartServer(program string) (*Server, error) {
 
 	if err := os.MkdirAll(cacheDir, 0775); err != nil {
 		if errors.Is(err, os.ErrPermission) {
-			return nil, terror.Denied.Errorf("Fehler beim Erzeugen des Cache-Verzeichnisses: %w", err)
+			return nil, deniedError("Fehler beim Erzeugen des Cache-Verzeichnisses: %w", err)
 		} else {
-			return nil, terror.Os.Errorf("Fehler beim Erzeugen des Cache-Verzeichnisses: %w", err)
+			return nil, osError("Fehler beim Erzeugen des Cache-Verzeichnisses: %w", err)
 		}
 	}
 
-	socketPath := filepath.Join(cacheDir, program+".socket")
+	socketPath := filepath.Join(cacheDir, name+".socket")
 
 	if err := deleteOldSocket(socketPath); err != nil {
 		return nil, err
@@ -40,10 +54,11 @@ func StartServer(program string) (*Server, error) {
 
 	listener, err := net.Listen("unix", socketPath)
 	if err != nil {
-		return nil, err
+		return nil, osError("Fehler beim Horchen am Socket: %w", err)
 	}
+	
 	return &Server{
-		program:    program,
+		name:       name,
 		cacheDir:   cacheDir,
 		socketPath: socketPath,
 		listener:   listener,
@@ -51,6 +66,7 @@ func StartServer(program string) (*Server, error) {
 
 }
 
+// Löscht einen eventuell bereits vorhandenen Socket.
 func deleteOldSocket(path string) error {
 	info, err := os.Stat(path)
 	if err != nil && os.IsNotExist(err) {
@@ -59,41 +75,74 @@ func deleteOldSocket(path string) error {
 	}
 
 	if info.Mode().Type() != os.ModeSocket {
-		return terror.Exists.Errorf("Socket-Pfad existiert bereits, ist jedoch KEIN Socket: %s", path)
+		return existsError("Socket-Pfad existiert bereits, ist jedoch KEIN Socket: %s", path)
 	}
 
 	conn, err := net.Dial("unix", path)
 	if err != nil {
 		if err := os.Remove(path); err != nil {
 			if errors.Is(err, os.ErrPermission) {
-				return terror.Denied.Errorf("Fehler beim Löschen des alten Sockets: %w", err)
+				return deniedError("Fehler beim Löschen des alten Sockets: %w", err)
 			}
-			return terror.Os.Errorf("Fehler beim Löschen des alten Sockets: %w", err)
+			return osError("Fehler beim Löschen des alten Sockets: %w", err)
 		}
 		return nil
 	}
 
 	conn.Close()
 
-	return terror.Exists.Errorf("Server läuft bereits")
+	return existsError("Server läuft bereits")
 }
 
-func (s *Server) Program() string {
-	return s.program
+// Liefert den Namen des Servers.
+func (s *Server) Name() string {
+	return s.name
 }
 
+// Liefert den Pfad zum Socket.
 func (s *Server) SocketPath() string {
 	return s.socketPath
 }
 
+// Liefert das Cache-Verzeichnis, in welchem sich der alle Sockets befinden.
+//
+// Das ist normalerweise ~/.cache/soargs
 func (s *Server) CacheDir() string {
 	return s.cacheDir
 }
 
+// Wartet auf dem Socket auf eingehende Verbindungen und
+// liefert ein [Client]-Objekt, welches zur Kommunikation mit dem Client dient.
+//
+// Falls die Verbindung nicht klappt, wird ein "connection"-Fehler geliefert.
 func (s *Server) WaitForClient() (*Client, error) {
 	conn, err := s.listener.Accept()
 	if err != nil {
-		return nil, err
+		return nil, connectionError("Fehler beim Verbinden mit einem neuen Client: %w", err)
 	}
 	return &Client{conn: conn}, nil
+}
+
+// Wie [WaitForClient], nur wird ein entsprechender Channel geliefert.
+//
+// Der Channel liefert [ClientResult]-Objekte, welche einfach die Rückgabewerte
+// von [WaitForClient] enthält. Also den [Client] ([ClientResult.Client]) oder einen Fehler ([ClientResult.Err]).
+func (s *Server) ClientChannel() <-chan ClientResult {
+	ch := make(chan ClientResult)
+	go func() {
+		for {
+			c, err := s.WaitForClient()
+			ch <- ClientResult{
+				Client: c,
+				Err:    err,
+			}
+		}
+	}()
+	return ch
+}
+
+// Schließt und löscht den Socket.
+func (s *Server) Close() {
+	s.listener.Close()
+	os.Remove(s.socketPath)
 }

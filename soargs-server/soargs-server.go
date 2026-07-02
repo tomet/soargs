@@ -19,7 +19,7 @@ func main() {
 	})
 
 	if err != nil {
-		terror.Syntax.Fail(err)
+		terror.FailWithError(err)
 	}
 
 	switch cmd {

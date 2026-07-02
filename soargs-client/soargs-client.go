@@ -17,27 +17,19 @@ import (
 )
 
 func main() {
-	terror.Program = "soargs-client"
-
-	exe, err := os.Executable()
-	if err != nil {
-		terror.Os.Fail("Konnte den Namen des Executables nicht ermitteln!")
-	}
-
-	program := filepath.Base(exe)
+	program := filepath.Base(os.Args[0])
 	terror.Program = program
-
-	args := os.Args[1:]
+	args := os.Args
 
 	if program == "soargs-client" {
 		if len(os.Args) < 2 {
 			terror.Syntax.Fail(
-				"Bitte soargs-client über einen Symlink aufrufen oder den\n" +
-					"Namen des Server-Programms als Argument angegeben!",
+				"Bitte soargs-client über einen Symlink (Basename == Servername) aufrufen\n" +
+				 "oder den Namen des Servers als erstes Argument angegeben!",
 			)
 		}
 		program = os.Args[1]
-		args = os.Args[2:]
+		args = append([]string{os.Args[0]}, os.Args[2:]...)
 	}
 
 	cacheDir, err := os.UserCacheDir()
@@ -46,8 +38,23 @@ func main() {
 	}
 	socketPath := filepath.Join(cacheDir, "soargs", program+".socket")
 
+	info, err := os.Stat(socketPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			terror.Connection.Fail("%s-Server läuft nicht (Socket existiert nicht)!", program)
+		}
+	} else if info.Mode().Type() != os.ModeSocket {
+		terror.Connection.Fail("Pfad ist KEIN Unix-Domain-Socket: %s", socketPath)
+	}
+
 	conn, err := net.Dial("unix", socketPath)
 	if err != nil {
+		var sysErr *os.SyscallError
+		if errors.As(errors.Unwrap(err), &sysErr) {
+			if sysErr.Syscall == "connect" {
+				terror.Connection.Fail("%s-Server läuft nicht (connection refused)!", program)
+			}
+		}
 		terror.Connection.Fail("Fehler beim Verbinden mit dem Server: %s", err)
 	}
 
